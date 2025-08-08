@@ -424,7 +424,7 @@ SaveManager:LoadAutoloadConfig()
 
 ------------------------------ // Auto-Resume Rolling After Rejoin \\ ------------------------------
 
--- Auto resume rolling for Weapon or Trait after rejoining
+-- Auto-resume rolling for Weapon or Trait after rejoining
 task.defer(function()
     local rollingType = getgenv().rollingType
     local instanceName = getgenv().instanceName
@@ -433,15 +433,15 @@ task.defer(function()
         if rollingType == "Weapon" then
             warn('Was Rolling For: ' .. instanceName)
             SelectedWeapon = instanceName
-            -- Corrected function for dropdowns: SetDropdownValue
-            Library:SetDropdownValue("Select Weapon", instanceName)
+            -- Corrected function for dropdowns: SetValue as shown in the example script
+            Library:SetValue("Select Weapon", instanceName)
             -- This is the fix! It sets the toggle and fires the callback.
             Library:SetValue("Weapon Roll", true, true)
         elseif rollingType == "Trait" then
             warn('Was Rolling For: ' .. instanceName)
             SelectedTrait = instanceName
-            -- Corrected function for dropdowns: SetDropdownValue
-            Library:SetDropdownValue("Select Trait", instanceName)
+            -- Corrected function for dropdowns: SetValue as shown in the example script
+            Library:SetValue("Select Trait", instanceName)
             -- This is the fix! It sets the toggle and fires the callback.
             Library:SetValue("Trait Roll", true, true)
         end
