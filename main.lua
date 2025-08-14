@@ -7,8 +7,6 @@ end
 
 getgenv().rollingType = nil
 getgenv().instanceName = nil
-getgenv().flowMode = nil
-getgenv().flowColor = nil
 
 ------------------------------ // Library \\ ------------------------------
 
@@ -66,22 +64,17 @@ local CurrentTypes = {"speed", "power", "hitbox", "cooldown", "stamina"}
 local CurrentFaces = {"NAGI", "ANRI", "SILVA", "RIN"}
 local CurrentHeights = {"5'3", "5'4", "5'5", "5'6", "5'7", "5'8", "5'9", "6'0", "6'1", "6'2", "6'3"}
 
-local function hasDesiredColor(flowMode, flowColor, Character)
-    local r = math.floor(Character.AuraColour.Red.Value * 255)
-    local g = math.floor(Character.AuraColour.Green.Value * 255)
-    local b = math.floor(Character.AuraColour.Blue.Value * 255)
-    local targetR = math.floor(flowColor[1] * 255)
-    local targetG = math.floor(flowColor[2] * 255)
-    local targetB = math.floor(flowColor[3] * 255)
+local function HasExactColor()
+    local RedColor = Character.AuraColour.Red.Value * 255
+    local GreenColor = Character.AuraColour.Green.Value * 255
+    local BlueColor = Character.AuraColour.Blue.Value * 255
 
-    if flowMode == "Exact" then
-        return r == targetR and g == targetG and b == targetB
-    elseif flowMode == "SameOrUnder" then
-        return r <= targetR and g <= targetG and b <= targetB
-    end
+    return math.floor(RedColor) == math.floor(ActualColor.R * 255) and
+           math.floor(GreenColor) == math.floor(ActualColor.G * 255) and
+           math.floor(BlueColor) == math.floor(ActualColor.B * 255)
 end
 
-local function RejoinAndRollback(rollingType, instanceName, flowMode, flowColor)
+local function RejoinAndRollback(rollingType, instanceName)
     warn('rejoining')
 
     local args = {
@@ -94,11 +87,9 @@ local function RejoinAndRollback(rollingType, instanceName, flowMode, flowColor)
     local teleport_code = string.format([[
         getgenv().rollingType = %q
         getgenv().instanceName = %q
-        getgenv().flowMode = %q
-        getgenv().flowColor = { %s }
         loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()
 
-    ]], rollingType or "", instanceName or "", flowMode or "", flowColor and string.format("%s, %s, %s", flowColor[1], flowColor[2], flowColor[3]) or "")
+    ]], rollingType or "", instanceName or "")
 
     queue_on_teleport(teleport_code)
     game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
@@ -155,28 +146,26 @@ RerollWeaponBox:AddToggle("Weapon Roll", {
     Tooltip = "Select a weapon before enabling this",
     Callback = function(Value)
         if Value then
-            if SelectedWeapon == nil then
-                Library:Notify("Select a weapon first!")
-                return
-            end
-            if Player.Backpack:FindFirstChild(SelectedWeapon) then
-                Library:Notify("You already have " .. SelectedWeapon)
-                return
-            end
+		if SelectedWeapon == nil then
+			Library:Notify("Select a weapon first!")
+			return
+		end
+		if Player.Backpack:FindFirstChild(SelectedWeapon) then
+			Library:Notify("You already have " .. SelectedWeapon)
+			return
+		end
 
-            Library:Notify("Weapon Reroll Started || Rolling For: " .. SelectedWeapon)
+		Library:Notify("Weapon Reroll Started || Rolling For: " .. SelectedWeapon)
 
             WeaponConnection = Player.Backpack.ChildAdded:Connect(function(NewWeapon)
                 print('Recieved Weapon: ' .. NewWeapon.Name)
                 if NewWeapon.Name == SelectedWeapon then
                     warn("Got Weapon: ".. NewWeapon.Name)
                     WeaponConnection:Disconnect()
-                    getgenv().rollingType = nil
-                    getgenv().instanceName = nil
-                    Library:Notify("Got Weapon:" .. '' .. NewWeapon.Name .. " || " .. "Rejoining")
-                    queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
-                    task.wait(3)
-                    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+					Library:Notify("Got Weapon:" .. '' .. NewWeapon.Name .. " || " .. "Rejoining")
+					queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
+					task.wait(3)
+					game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
                     return
                 else
                     if Player.Character:WaitForChild("RankSystem").Yen.Value < 3000 then
@@ -193,7 +182,7 @@ RerollWeaponBox:AddToggle("Weapon Roll", {
                 warn("Weapon Reroll Stopped")
                 WeaponConnection:Disconnect()
                 WeaponConnection = nil
-                Library:Notify("Weapon Reroll Stopped")
+				Library:Notify("Weapon Reroll Stopped")
             end
         end
     end
@@ -231,29 +220,27 @@ RerollTraitBox:AddToggle("Trait Roll", {
     Callback = function(Value)
         if Value then
 
-            if SelectedTrait == nil then
-                Library:Notify("Select a trait first!")
-                return
-            end
+		if SelectedTrait == nil then
+			Library:Notify("Select a trait first!")
+			return
+		end
 
-            if Player.Backpack.Trait:FindFirstChild(SelectedTrait) then
-                Library:Notify("You already have " .. SelectedTrait)
-                return
-            end
+		if Player.Backpack.Trait:FindFirstChild(SelectedTrait) then
+			Library:Notify("You already have " .. SelectedTrait)
+			return
+		end
 
-            Library:Notify("Trait Reroll Started || Rolling For: " .. SelectedTrait)
+		Library:Notify("Trait Reroll Started || Rolling For: " .. SelectedTrait)
 
             TraitConnection = Player.Backpack.Trait.ChildAdded:Connect(function(NewTrait)
                 print('Recieved Trait: ' .. NewTrait.Name)
                 if NewTrait.Name == SelectedTrait then
                     warn("Got Trait: ".. NewTrait.Name)
                     TraitConnection:Disconnect()
-                    getgenv().rollingType = nil
-                    getgenv().instanceName = nil
-                    Library:Notify("Got Trait:" .. '' .. NewTrait.Name .. " || " .. "Rejoining")
-                    task.wait(3)
-                    queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
-                    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+					Library:Notify("Got Trait:" .. '' .. NewTrait.Name .. " || " .. "Rejoining")
+					task.wait(3)
+					queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
+					game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
                     return
                 else
                     if Player.Character:WaitForChild("RankSystem").Yen.Value < 3000 then
@@ -270,7 +257,7 @@ RerollTraitBox:AddToggle("Trait Roll", {
                 warn("Trait Reroll Stopped")
                 TraitConnection:Disconnect()
                 TraitConnection = nil
-                Library:Notify("Trait Reroll Stopped")
+				Library:Notify("Trait Reroll Stopped")
             end
         end
     end
@@ -278,7 +265,7 @@ RerollTraitBox:AddToggle("Trait Roll", {
 
 RerollTraitBox:AddDivider()
 
----
+--------------- // Flow Roll UI \\ ---------------
 
 --------------- // Flow Roll UI \\ ---------------
 
@@ -305,86 +292,58 @@ RerollFlowBox:AddLabel("Select flow color"):AddColorPicker("Select flow color", 
 
 RerollFlowBox:AddDivider()
 
-local ExactColorToggle
-local SameOrUnderToggle
-
-local function toggleFlowRoll(state, mode)
-    if state then
-        local flowColorTable = {SelectedFlowColor.R, SelectedFlowColor.G, SelectedFlowColor.B}
-        if hasDesiredColor(mode, flowColorTable, Character) then
-            Library:Notify("You already have that flow color or a better one.")
-            if mode == "Exact" then
-                ExactColorToggle:SetValue(false)
-            elseif mode == "SameOrUnder" then
-                SameOrUnderToggle:SetValue(false)
-            end
-            return
-        end
-
-        -- Ensure only one toggle is active at a time
-        if mode == "Exact" and SameOrUnderToggle:GetValue() then
-            SameOrUnderToggle:SetValue(false)
-        elseif mode == "SameOrUnder" and ExactColorToggle:GetValue() then
-            ExactColorToggle:SetValue(false)
-        end
-
-        getgenv().rollingType = "Flow"
-        getgenv().flowMode = mode
-        getgenv().flowColor = flowColorTable
-
-        Library:Notify("Flow Reroll Started || Rolling For: " .. mode)
-        FlowReroll:FireServer()
-
-        FlowConnection = Character.AuraColour.Red:GetPropertyChangedSignal("Value"):Connect(function()
-            if hasDesiredColor(mode, flowColorTable, Character) then
-                FlowConnection:Disconnect()
-                FlowConnection = nil
-                getgenv().rollingType = nil
-                getgenv().flowMode = nil
-                getgenv().flowColor = nil
-                Library:Notify("Got Flow Color || Rejoining")
-                task.wait(3)
-                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
-                game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
-            else
-                if Player.Character:WaitForChild("RankSystem").Yen.Value < 1000 then
-                    RejoinAndRollback("Flow", nil, mode, flowColorTable)
-                else
-                    FlowReroll:FireServer()
-                end
-            end
-        end)
-    else
-        if FlowConnection then
-            FlowConnection:Disconnect()
-            FlowConnection = nil
-            getgenv().rollingType = nil
-            getgenv().flowMode = nil
-            getgenv().flowColor = nil
-            Library:Notify("Flow Reroll Stopped")
-        end
-    end
-end
-
--- Exact Color Toggle
-ExactColorToggle = RerollFlowBox:AddToggle("Exact Color", {
+-- Toggle to start/stop rolling
+RerollFlowBox:AddToggle("Exact Color", {
     Text = "Exact Color",
     Default = false,
     Tooltip = "Rolls until you get the exact flow color you picked",
+
     Callback = function(State)
-        toggleFlowRoll(State, "Exact")
+        if State then
+            if HasDesiredColor() then
+                Library:Notify("You already have that flow color")
+                return
+            end
+            
+            FlowReroll:FireServer()
+
+            FlowConnection = RunService.Heartbeat:Connect(function()
+                if HasDesiredColor() then
+                    FlowConnection:Disconnect()
+                    FlowConnection = nil
+                    Library:Notify(
+                        string.format(
+                            "You got the Flow Color: R:%d G:%d B:%d",
+                            SelectedFlowColor.R * 255,
+                            SelectedFlowColor.G * 255,
+                            SelectedFlowColor.B * 255
+                        )
+                    )
+                else
+                    FlowReroll:FireServer()
+                    task.wait(0.1)
+                end
+            end)
+        else
+            if FlowConnection then
+                FlowConnection:Disconnect()
+                FlowConnection = nil
+            end
+        end
     end,
 })
 
--- Same or Under Toggle
-SameOrUnderToggle = RerollFlowBox:AddToggle("Same or under", {
+RerollFlowBox:AddToggle("Same or under", {
     Text = "Same or under",
     Default = false,
     Tooltip = "Rolls until you get the same flow color you picked or lower",
-    Callback = function(State)
-        toggleFlowRoll(State, "SameOrUnder")
+
+    callback = function(Value)
     end,
 })
+
+RerollTraitBox:AddDivider()
+
 
 
 --------------- // Buff Roll UI \\ ---------------
@@ -500,6 +459,7 @@ RerollHeightBox:AddDivider()
 
 ------------------------------ // Settings \\ ------------------------------
 
+Library:SetWatermarkVisibility(true)
 
 local FrameTimer = tick()
 local FrameCounter = 0
@@ -535,100 +495,65 @@ SaveManager:LoadAutoloadConfig()
 
 ------------------------------ // Auto-Resume Rolling After Rejoin \\ ------------------------------
 
+-- Auto-resume rolling for Weapon or Trait after rejoining
 task.defer(function()
     local rollingType = getgenv().rollingType
     local instanceName = getgenv().instanceName
-    local flowMode = getgenv().flowMode
-    local flowColor = getgenv().flowColor
 
-    if rollingType then
-        
-        -- Weapon Rolling
+    if rollingType and instanceName then
         if rollingType == "Weapon" then
             warn('Was Rolling For: ' .. instanceName)
             SelectedWeapon = instanceName
             WeaponConnection = Player.Backpack.ChildAdded:Connect(function(NewWeapon)
-                print('Received Weapon: ' .. NewWeapon.Name)
+                print('Recieved Weapon: ' .. NewWeapon.Name)
                 if NewWeapon.Name == instanceName then
                     warn("Got Weapon: " .. NewWeapon.Name)
                     WeaponConnection:Disconnect()
                     getgenv().rollingType = nil
                     getgenv().instanceName = nil
-                    Library:Notify("Got Weapon: " .. instanceName .. ' || Rejoining')
-                    task.wait(3)
+                    Library:Notify("Got Weapon: " .. instanceName .. ' || ' .. "Rejoining")
+					task.wait(3)
                     queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
                     game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+                    return
                 else
                     if Player.Character:WaitForChild("RankSystem").Yen.Value < 3000 then
                         RejoinAndRollback("Weapon", instanceName)
+                        return
                     else
                         WeaponReroll:FireServer()
                     end
                 end
             end)
             WeaponReroll:FireServer()
-
-        -- Trait Rolling
         elseif rollingType == "Trait" then
             warn('Was Rolling For: ' .. instanceName)
             SelectedTrait = instanceName
             TraitConnection = Player.Backpack.Trait.ChildAdded:Connect(function(NewTrait)
-                print('Received Trait: ' .. NewTrait.Name)
+                print('Recieved Trait: ' .. NewTrait.Name)
                 if NewTrait.Name == instanceName then
                     warn("Got Trait: " .. NewTrait.Name)
                     TraitConnection:Disconnect()
                     getgenv().rollingType = nil
                     getgenv().instanceName = nil
-                    Library:Notify("Got Trait: " .. instanceName .. ' || Rejoining')
-                    task.wait(3)
+                    Library:Notify("Got Trait: " .. instanceName .. ' || ' .. "Rejoining")
+					task.wait(3)
                     queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
                     game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+                    return
                 else
                     if Player.Character:WaitForChild("RankSystem").Yen.Value < 3000 then
                         RejoinAndRollback("Trait", instanceName)
+                        return
                     else
                         TraitReroll:FireServer()
                     end
                 end
             end)
             TraitReroll:FireServer()
-
-        -- Flow Rolling
-        elseif rollingType == "Flow" and flowMode and flowColor then
-            warn('Was Rolling For Flow Color: ' .. table.concat(flowColor, ", "))
-            SelectedFlowColor = flowColor
-            
-            FlowConnection = Character.AuraColour.Red:GetPropertyChangedSignal("Value"):Connect(function()
-                if hasDesiredColor(flowMode, flowColor, Character) then
-                    FlowConnection:Disconnect()
-                    getgenv().rollingType = nil
-                    getgenv().flowMode = nil
-                    getgenv().flowColor = nil
-                    Library:Notify(
-                        string.format(
-                            "Got Flow Color: R:%d G:%d B:%d || Rejoining",
-                            flowColor[1] * 255,
-                            flowColor[2] * 255,
-                            flowColor[3] * 255
-                        )
-                    )
-                    task.wait(3)
-                    queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
-                    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
-                else
-                    if Player.Character:WaitForChild("RankSystem").Yen.Value < 1000 then
-                        RejoinAndRollback("Flow", nil, flowMode, flowColor)
-                    else
-                        FlowReroll:FireServer()
-                    end
-                end
-            end)
-
-            FlowReroll:FireServer()
         end
     end
 end)
-
 
 
 
@@ -847,4 +772,3 @@ Character.HeightValue.Changed:Connect(updateHeight)
 updateHeight()
 
 Information:AddDivider()
-
