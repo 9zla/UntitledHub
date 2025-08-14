@@ -1,29 +1,21 @@
 local asdkasodpkasdpoaksdopaskdasopkdaspo = 8216847247
-
 if game:GetService("Players").LocalPlayer.UserId ~= asdkasodpkasdpoaksdopaskdasopkdaspo then
     game:GetService("Players").LocalPlayer:Kick("You are not whitelisted")
     return
 end
 
-getgenv().rollingType = nil
-getgenv().instanceName = nil
-
 ------------------------------ // Library \\ ------------------------------
-
 local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
-
 local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
 local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 
 ------------------------------ // Variables \\ ------------------------------
-
 local Player = game:GetService("Players").LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Rerolls = ReplicatedStorage:WaitForChild("rerolls")
-
 local WeaponReroll = Rerolls.specreroll
 local TraitReroll = Rerolls.traitreroll
 local AuraReroll = Rerolls.aurareroll
@@ -45,21 +37,20 @@ local CurrentWeapons = {}
 for _, weapon in ReplicatedStorage.Specs:GetChildren() do
     if not weapon:IsA("Folder") then
         table.insert(CurrentWeapons, weapon.Name)
+        table.sort(CurrentWeapons)
     end
 end
-table.sort(CurrentWeapons)
 
 local CurrentTraits = {}
 for _, trait in ReplicatedStorage.Specs.Traits:GetChildren() do
     table.insert(CurrentTraits, trait.Name)
+    table.sort(CurrentTraits)
 end
-table.sort(CurrentTraits)
 
 local SelectedWeapon = nil
 local SelectedTrait = nil
 local ActualColor = nil
 local SelectedType = nil
-
 local CurrentTypes = {"speed", "power", "hitbox", "cooldown", "stamina"}
 local CurrentFaces = {"NAGI", "ANRI", "SILVA", "RIN"}
 local CurrentHeights = {"5'3", "5'4", "5'5", "5'6", "5'7", "5'8", "5'9", "6'0", "6'1", "6'2", "6'3"}
@@ -68,7 +59,6 @@ local function HasExactColor()
     local RedColor = Character.AuraColour.Red.Value * 255
     local GreenColor = Character.AuraColour.Green.Value * 255
     local BlueColor = Character.AuraColour.Blue.Value * 255
-
     return math.floor(RedColor) == math.floor(ActualColor.R * 255) and
            math.floor(GreenColor) == math.floor(ActualColor.G * 255) and
            math.floor(BlueColor) == math.floor(ActualColor.B * 255)
@@ -76,27 +66,18 @@ end
 
 local function RejoinAndRollback(rollingType, instanceName)
     warn('rejoining')
-
-    local args = {
-        [1] = "Right",
-        [2] = "F\255"
-    }
-
+    local args = { [1] = "Right", [2] = "F\255" }
     Rerolls:WaitForChild("KeybindChange"):FireServer(unpack(args))
-
     local teleport_code = string.format([[
         getgenv().rollingType = %q
         getgenv().instanceName = %q
         loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()
-
     ]], rollingType or "", instanceName or "")
-
     queue_on_teleport(teleport_code)
     game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
 end
 
 ------------------------------ // Main \\ ------------------------------
-
 local Script = Library:CreateWindow({
     Title = "Untitled Hub | Locked",
     Center = true,
@@ -109,63 +90,52 @@ local Tabs = {
     Rerolls = Script:AddTab("Rolling"),
     Misc = Script:AddTab("Misc"),
     ["UI Settings"] = Script:AddTab("UI Settings"),
-    PlayerInfo = Script:AddTab("Player Info")
 }
 
 local RerollTab = Tabs.Rerolls
 local MiscTab = Tabs.Misc
 local Settings = Tabs["UI Settings"]
-local PlayerInfo = Tabs.PlayerInfo
 
 --------------- // Weapon Roll UI \\ ---------------
-
 local RerollWeaponBox = RerollTab:AddLeftGroupbox("Weapon Roll")
-
 RerollWeaponBox:AddDivider()
 RerollWeaponBox:AddLabel("Select a weapon from 'Select Weapon' then click 'Weapon Roll'", true)
 RerollWeaponBox:AddDivider()
-
 RerollWeaponBox:AddDropdown("Select Weapon", {
     Values = CurrentWeapons,
     Default = 1,
     Multi = false,
     Text = "Select Weapon",
     Tooltip = "Select the weapon you want to roll for",
-
     Callback = function(Value)
         warn('Selected:', Value)
         SelectedWeapon = Value
     end,
 })
-
 RerollWeaponBox:AddDivider()
-
 RerollWeaponBox:AddToggle("Weapon Roll", {
     Text = "Weapon Roll",
     Default = false,
     Tooltip = "Select a weapon before enabling this",
     Callback = function(Value)
         if Value then
-		if SelectedWeapon == nil then
-			Library:Notify("Select a weapon first!")
-			return
-		end
-		if Player.Backpack:FindFirstChild(SelectedWeapon) then
-			Library:Notify("You already have " .. SelectedWeapon)
-			return
-		end
-
-		Library:Notify("Weapon Reroll Started || Rolling For: " .. SelectedWeapon)
-
+            if SelectedWeapon == nil then
+                Library:Notify("Select a weapon first!")
+                return
+            end
+            if Player.Backpack:FindFirstChild(SelectedWeapon) then
+                Library:Notify("You already have " .. SelectedWeapon)
+                return
+            end
             WeaponConnection = Player.Backpack.ChildAdded:Connect(function(NewWeapon)
                 print('Recieved Weapon: ' .. NewWeapon.Name)
                 if NewWeapon.Name == SelectedWeapon then
-                    warn("Got Weapon: ".. NewWeapon.Name)
+                    warn("Got Weapon:" .. NewWeapon.Name)
                     WeaponConnection:Disconnect()
-					Library:Notify("Got Weapon:" .. '' .. NewWeapon.Name .. " || " .. "Rejoining")
-					queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
-					task.wait(3)
-					game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+                    Library:Notify("Got Weapon:" .. '' .. NewWeapon.Name .. "||" .. "Rejoining")
+                    queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
+                    task.wait(3)
+                    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
                     return
                 else
                     if Player.Character:WaitForChild("RankSystem").Yen.Value < 3000 then
@@ -182,65 +152,53 @@ RerollWeaponBox:AddToggle("Weapon Roll", {
                 warn("Weapon Reroll Stopped")
                 WeaponConnection:Disconnect()
                 WeaponConnection = nil
-				Library:Notify("Weapon Reroll Stopped")
+                Library:Notify("Weapon Reroll Stopped")
             end
         end
     end
 })
-
 RerollWeaponBox:AddDivider()
 
 --------------- // Trait Roll UI \\ ---------------
-
 local RerollTraitBox = RerollTab:AddLeftGroupbox("Trait Roll")
-
 RerollTraitBox:AddDivider()
-RerollTraitBox:AddLabel("Select a trait from 'Select Trait' then click 'Trait Roll'", true)
+RerollTraitBox:AddLabel("Select a weapon from 'Select Trait' then click 'Trait Roll'", true)
 RerollTraitBox:AddDivider()
-
 RerollTraitBox:AddDropdown("Select Trait", {
     Values = CurrentTraits,
     Default = 1,
     Multi = false,
     Text = "Select Trait",
     Tooltip = "Select the trait you want to roll for",
-
     Callback = function(Value)
         warn('Selected:', Value)
         SelectedTrait = Value
     end,
 })
-
 RerollTraitBox:AddDivider()
-
 RerollTraitBox:AddToggle("Trait Roll", {
     Text = "Trait Roll",
     Default = false,
     Tooltip = "Select a trait before enabling this",
     Callback = function(Value)
         if Value then
-
-		if SelectedTrait == nil then
-			Library:Notify("Select a trait first!")
-			return
-		end
-
-		if Player.Backpack.Trait:FindFirstChild(SelectedTrait) then
-			Library:Notify("You already have " .. SelectedTrait)
-			return
-		end
-
-		Library:Notify("Trait Reroll Started || Rolling For: " .. SelectedTrait)
-
+            if SelectedTrait == nil then
+                Library:Notify("Select a trait first!")
+                return
+            end
+            if Player.Backpack.Trait:FindFirstChild(SelectedTrait) then
+                Library:Notify("You already have " .. SelectedTrait)
+                return
+            end
             TraitConnection = Player.Backpack.Trait.ChildAdded:Connect(function(NewTrait)
                 print('Recieved Trait: ' .. NewTrait.Name)
                 if NewTrait.Name == SelectedTrait then
-                    warn("Got Trait: ".. NewTrait.Name)
+                    warn("Got Trait:" .. NewTrait.Name)
                     TraitConnection:Disconnect()
-					Library:Notify("Got Trait:" .. '' .. NewTrait.Name .. " || " .. "Rejoining")
-					task.wait(3)
-					queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
-					game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+                    Library:Notify("Got Trait:" .. '' .. NewTrait.Name .. "||" .. "Rejoining")
+                    task.wait(3)
+                    queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
+                    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
                     return
                 else
                     if Player.Character:WaitForChild("RankSystem").Yen.Value < 3000 then
@@ -257,56 +215,43 @@ RerollTraitBox:AddToggle("Trait Roll", {
                 warn("Trait Reroll Stopped")
                 TraitConnection:Disconnect()
                 TraitConnection = nil
-				Library:Notify("Trait Reroll Stopped")
+                Library:Notify("Trait Reroll Stopped")
             end
         end
     end
 })
-
 RerollTraitBox:AddDivider()
 
 --------------- // Flow Roll UI \\ ---------------
-
---------------- // Flow Roll UI \\ ---------------
-
 local RerollFlowBox = RerollTab:AddRightGroupbox("Flow roll")
-
 local SelectedFlowColor = Color3.new(1, 1, 1)
 local FlowConnection
-
 RerollFlowBox:AddDivider()
 RerollFlowBox:AddLabel("Select a color then enable Exact Color", true)
 RerollFlowBox:AddDivider()
-
 -- Color Picker (only stores the value now)
 RerollFlowBox:AddLabel("Select flow color"):AddColorPicker("Select flow color", {
     Default = SelectedFlowColor,
     Title = "Select flow color then select the type of roll",
     Transparency = 0,
-
     Callback = function(Value)
         SelectedFlowColor = Value
         ActualColor = Value
     end,
 })
-
 RerollFlowBox:AddDivider()
-
 -- Toggle to start/stop rolling
 RerollFlowBox:AddToggle("Exact Color", {
     Text = "Exact Color",
     Default = false,
     Tooltip = "Rolls until you get the exact flow color you picked",
-
     Callback = function(State)
         if State then
             if HasDesiredColor() then
                 Library:Notify("You already have that flow color")
                 return
             end
-            
             FlowReroll:FireServer()
-
             FlowConnection = RunService.Heartbeat:Connect(function()
                 if HasDesiredColor() then
                     FlowConnection:Disconnect()
@@ -332,174 +277,129 @@ RerollFlowBox:AddToggle("Exact Color", {
         end
     end,
 })
-
 RerollFlowBox:AddToggle("Same or under", {
     Text = "Same or under",
     Default = false,
     Tooltip = "Rolls until you get the same flow color you picked or lower",
-
-    callback = function(Value)
-    end,
+    callback = function(Value) end,
 })
-
 RerollTraitBox:AddDivider()
 
-
-
 --------------- // Buff Roll UI \\ ---------------
-
 local RerollBuffBox = RerollTab:AddRightGroupbox("Buff Roll")
-
 RerollBuffBox:AddDivider()
 RerollBuffBox:AddLabel("Select the type of flow, then select the number and select the type of roll", true)
 RerollBuffBox:AddDivider()
-
 RerollBuffBox:AddDropdown("Select Flow Type", {
     Values = CurrentTypes,
     Default = 1,
     Multi = false,
     Text = "Select flow type",
     Tooltip = "Select the type of flow you want to roll for",
-
     Callback = function(Value)
         warn('Selected:', Value)
         SelectedType = Value
     end,
 })
-
 RerollBuffBox:AddDivider()
-
 RerollBuffBox:AddToggle("15% Buff", {
     Text = "15% Buff",
     Default = false,
     Tooltip = "Rolls until you get 15% of the flow type you selected",
-
-    Callback = function(Value)
-    end,
+    Callback = function(Value) end,
 })
-
 RerollBuffBox:AddToggle("Same or under", {
     Text = "Same or above",
     Default = false,
     Tooltip = "Rolls until you get at least the number you selected or more",
-
-    callback = function(Value)
-    end,
+    callback = function(Value) end,
 })
-
 RerollBuffBox:AddDivider()
 
 --------------- // Face Roll UI \\ ---------------
-
 local RerollFaceBox = RerollTab:AddLeftGroupbox("Face Roll")
-
 RerollFaceBox:AddDivider()
 RerollFaceBox:AddLabel("Select the face you want, then click 'Face Roll'", true)
 RerollFaceBox:AddDivider()
-
 RerollFaceBox:AddDropdown("Select Face", {
     Values = CurrentFaces,
     Default = 1,
     Multi = false,
     Text = "Select face",
     Tooltip = "Select the face you want to roll for",
-
     Callback = function(Value)
         warn('Selected:', Value)
         SelectedType = Value
     end,
 })
-
 RerollFaceBox:AddDivider()
-
 RerollFaceBox:AddToggle("Face Roll", {
     Text = "Face Roll",
     Default = false,
     Tooltip = "Rolls until you get the face you selected",
-
-    Callback = function(Value)
-    end,
+    Callback = function(Value) end,
 })
-
 RerollFaceBox:AddDivider()
 
 --------------- // Height Roll UI \\ ---------------
-
 local RerollHeightBox = RerollTab:AddRightGroupbox("Height Roll")
-
 RerollHeightBox:AddDivider()
 RerollHeightBox:AddLabel("Select the height you want, then click 'Height Roll'", true)
 RerollHeightBox:AddDivider()
-
 RerollHeightBox:AddDropdown("Select Height", {
     Values = CurrentHeights,
     Default = 1,
     Multi = false,
     Text = "Select height",
     Tooltip = "Select the height you want to roll for",
-
     Callback = function(Value)
         warn('Selected:', Value)
         SelectedType = Value
     end,
 })
-
 RerollHeightBox:AddDivider()
-
 RerollHeightBox:AddToggle("Height Roll", {
     Text = "Height Roll",
     Default = false,
     Tooltip = "Rolls until you get the height you selected",
-
-    Callback = function(Value)
-    end,
+    Callback = function(Value) end,
 })
-
 RerollHeightBox:AddDivider()
 
 ------------------------------ // Settings \\ ------------------------------
-
 Library:SetWatermarkVisibility(true)
-
 local FrameTimer = tick()
 local FrameCounter = 0
 local FPS = 60
-
 Library:OnUnload(function()
+    WatermarkConnection:Disconnect()
     Library.Unloaded = true
 end)
-
 local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu")
-
 MenuGroup:AddButton("Unload", function()
     Library:Unload()
 end)
-
-MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", { Default = "End", NoUI = true, Text = "Menu keybind" })
-
+MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {
+    Default = "End",
+    NoUI = true,
+    Text = "Menu keybind"
+})
 Library.ToggleKeybind = Options.MenuKeybind
-
 ThemeManager:SetLibrary(Library)
 SaveManager:SetLibrary(Library)
-
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
-
 ThemeManager:SetFolder("MyScriptHub")
 SaveManager:SetFolder("MyScriptHub/specific-game")
-
 SaveManager:BuildConfigSection(Tabs["UI Settings"])
 ThemeManager:ApplyToTab(Tabs["UI Settings"])
-
 SaveManager:LoadAutoloadConfig()
 
 ------------------------------ // Auto-Resume Rolling After Rejoin \\ ------------------------------
-
 -- Auto-resume rolling for Weapon or Trait after rejoining
 task.defer(function()
     local rollingType = getgenv().rollingType
     local instanceName = getgenv().instanceName
-
     if rollingType and instanceName then
         if rollingType == "Weapon" then
             warn('Was Rolling For: ' .. instanceName)
@@ -511,8 +411,7 @@ task.defer(function()
                     WeaponConnection:Disconnect()
                     getgenv().rollingType = nil
                     getgenv().instanceName = nil
-                    Library:Notify("Got Weapon: " .. instanceName .. ' || ' .. "Rejoining")
-					task.wait(3)
+                    Library:Notify("Got Weapon: " .. instanceName .. '|| ' .. "Rejoining")
                     queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
                     game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
                     return
@@ -536,8 +435,7 @@ task.defer(function()
                     TraitConnection:Disconnect()
                     getgenv().rollingType = nil
                     getgenv().instanceName = nil
-                    Library:Notify("Got Trait: " .. instanceName .. ' || ' .. "Rejoining")
-					task.wait(3)
+                    Library:Notify("Got Trait: " .. instanceName .. '|| ' .. "Rejoining")
                     queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
                     game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
                     return
@@ -554,7 +452,6 @@ task.defer(function()
         end
     end
 end)
-
 
 
 ------------------------------ // Misc \\ ------------------------------
