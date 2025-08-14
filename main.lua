@@ -1,4 +1,4 @@
-local asdkasodpkasdpoaksdopaskdasopkdaspo = 7452832502
+local asdkasodpkasdpoaksdopaskdasopkdaspo = 8216847247
 
 if game:GetService("Players").LocalPlayer.UserId ~= asdkasodpkasdpoaksdopaskdasopkdaspo then
     game:GetService("Players").LocalPlayer:Kick("You are not whitelisted")
@@ -847,3 +847,4 @@ Character.HeightValue.Changed:Connect(updateHeight)
 updateHeight()
 
 Information:AddDivider()
+
