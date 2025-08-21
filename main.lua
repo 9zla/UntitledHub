@@ -264,6 +264,9 @@ RerollWeaponBox:AddToggle("Weapon Roll", {
 						author = "Untitled Hub | Locked",
 					})
 					end
+					task.wait(3)
+					queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()')
+					TeleportService:Teleport(game.PlaceId, Player)
 					return
 				else
 					if Player.Character.RankSystem.Yen.Value < 3000 then
@@ -403,6 +406,28 @@ RerollTraitBox:AddToggle("Trait Roll", {
 					getgenv().instanceName = nil
 					getgenv().rollingType = nil
 					Library:Notify("Got Trait: " .. NewTrait.Name .. " | " .. "Rejoining", 2.8)
+
+					if getgenv().TraitWebhookNotification then
+						SendWebhook({
+						title = "Weapon Reroll: Successfully Got Weapon",
+						description = "**Weapon:** "
+							.. SelectedTrait
+							.. "\n**Time:** <t:"
+							.. os.time()
+							.. ":F> [<t:"
+							.. os.time()
+							.. ":R>]"
+							.. "\n**Username:** "
+							.. Player.Name
+							.. "\n**DisplayName:** "
+							.. Player.DisplayName
+							.. "\n**ID:** [`"
+							.. Player.UserId
+							.. "`]",
+						footer = "Untitled Hub: Trait Reroll [Normal]",
+						author = "Untitled Hub | Locked",
+					})
+					end
 					task.wait(3)
 					queue_on_teleport(
 						'loadstring(game:HttpGet("https://raw.githubusercontent.com/9zla/UntitledHub/main/main.lua"))()'
@@ -551,8 +576,6 @@ task.defer(function()
 	if rollingType and instanceName then
 		if rollingType == "Weapon" then
 			Library:Notify("Rolling For: " .. instanceName)
-			Options["Select Weapon"]:SetValue(instanceName, true)
-			Toggles["Weapon Roll"]:SetValue(true, true)
 			SelectedWeapon = instanceName
 
 			WeaponConnection = Player.Backpack.ChildAdded:Connect(function(NewWeapon)
@@ -586,8 +609,6 @@ task.defer(function()
 			WeaponReroll:FireServer()
 		elseif rollingType == "Trait" then
 			Library:Notify("Rolling For: " .. instanceName)
-			Options["Select Trait"]:SetValue(instanceName, true)
-			Toggles["Trait Roll"]:SetValue(true, true)
 			SelectedTrait = instanceName
 
 			TraitConnection = Player.Backpack.Trait.ChildAdded:Connect(function(NewTrait)
