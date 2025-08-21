@@ -552,7 +552,7 @@ task.defer(function()
 		if rollingType == "Weapon" then
 			Library:Notify("Rolling For: " .. instanceName)
 			Options["Select Weapon"]:SetValue(instanceName, true)
-			Options["Weapon Roll"]:SetValue(true, true)
+			Toggles["Weapon Roll"]:SetValue(true, true)
 			SelectedWeapon = instanceName
 
 			WeaponConnection = Player.Backpack.ChildAdded:Connect(function(NewWeapon)
@@ -587,7 +587,7 @@ task.defer(function()
 		elseif rollingType == "Trait" then
 			Library:Notify("Rolling For: " .. instanceName)
 			Options["Select Trait"]:SetValue(instanceName, true)
-			Options["Trait Roll"]:SetValue(true, true)
+			Toggles["Trait Roll"]:SetValue(true, true)
 			SelectedTrait = instanceName
 
 			TraitConnection = Player.Backpack.Trait.ChildAdded:Connect(function(NewTrait)
