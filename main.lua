@@ -1,3 +1,6 @@
+game.Loaded:Wait()
+
+
 ------------------------------ // Library \\ ------------------------------
 
 local repo = "https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/"
