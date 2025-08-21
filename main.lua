@@ -1,6 +1,3 @@
-game.Loaded:Wait()
-
-
 ------------------------------ // Library \\ ------------------------------
 
 local repo = "https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/"
@@ -218,12 +215,6 @@ Character.RankSystem.Yen.Changed:Connect(updateYen)
 updateYen()
 
 -- Weapon
-
-local PlayerWeaponText = Information:AddLabel("Weapon: " .. Player.Backpack:FindFirstChildWhichIsA("NumberValue").Name)
-local function UpdatedWeapon()
-	PlayerWeaponText:SetText("Weapon: " .. Player.Backpack:FindFirstChildWhichIsA("NumberValue").Name)
-end
-
 local PlayerTraitText =
 	Information:AddLabel("Trait: " .. Player.Backpack.Trait:FindFirstChildWhichIsA("NumberValue").Name)
 
